@@ -1,0 +1,164 @@
+html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>!!! WARNING !!!</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card: #0a0a0a;
+      --accent: #ff0000;
+      --text: #ff4444;
+      --muted: #aa0000;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { background: var(--bg); color: var(--text); font-family: "Courier New", monospace; }
+
+    .overlay {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background: repeating-linear-gradient(45deg, #000 0, #000 20px, #111 20px, #111 40px);
+      z-index: 9999;
+    }
+
+    .wrap {
+      width: min(680px, 92vw);
+      background: #0a0a0a;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      box-shadow: 0 0 30px red, inset 0 0 40px #300;
+      padding: 28px 24px;
+      text-align: center;
+      animation: flicker 2s infinite;
+    }
+
+    h1 { font-size: 32px; color: var(--accent); text-transform: uppercase; text-shadow: 0 0 10px red, 0 0 20px darkred; }
+    p.lead { color: var(--muted); font-size: 16px; margin-bottom: 20px; }
+
+    .timer {
+      font-size: 40px; font-weight: bold; color: var(--accent);
+      margin: 20px 0;
+      animation: pulse 1s infinite;
+    }
+
+    input[type="password"] {
+      padding: 12px 14px; border-radius: 6px;
+      background: #111; border: 2px solid #700;
+      color: var(--text); outline: none; font-size: 18px;
+    }
+    button {
+      padding: 12px 16px; border-radius: 6px; border: 2px solid #900;
+      background: #200; color: var(--accent); cursor: pointer; font-weight: 700;
+      margin-left: 8px;
+      text-transform: uppercase;
+      transition: background .3s, transform .2s;
+    }
+    button:hover { background: #400; transform: scale(1.05); }
+
+    .msg { margin-top: 10px; font-size: 14px; color: var(--muted); }
+
+    .shake { animation: shake .6s infinite; }
+
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-8px); }
+      40%, 60% { transform: translateX(8px); }
+    }
+
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        box-shadow: 0 0 20px red, inset 0 0 20px #300;
+      }
+      20%, 24%, 55% {
+        box-shadow: none;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay" class="overlay">
+    <div id="card" class="wrap">
+      <h1>!!! FILE ANDA TERKUNCI !!!</h1>
+      <p class="lead">Semua data Anda telah dikunci. Masukkan <strong>KODE RAHASIA</strong> sebelum waktu habis atau kehilangan akses SELAMANYA.</p>
+
+      <div id="time" class="timer">00:00</div>
+
+      <div>
+        <input id="pwd" type="password" placeholder="Masukkan kode…" autocomplete="off" />
+        <button id="btn">Buka</button>
+      </div>
+      <div id="msg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- Suara alarm -->
+  <audio id="alarm" loop>
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const PASSWORD = "666";  // ganti password
+    let TOTAL_SECONDS = 3 * 60; // 3 menit
+
+    const overlay = document.getElementById('overlay');
+    const card = document.getElementById('card');
+    const timeEl = document.getElementById('time');
+    const msgEl = document.getElementById('msg');
+    const input = document.getElementById('pwd');
+    const btn = document.getElementById('btn');
+    const alarm = document.getElementById('alarm');
+
+    let remaining = TOTAL_SECONDS;
+    let timerId = null;
+
+    function fmt(n) { return n.toString().padStart(2, '0'); }
+    function renderTime() {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      timeEl.textContent = `${fmt(m)}:${fmt(s)}`;
+    }
+
+    function tick() {
+      remaining = Math.max(0, remaining - 1);
+      renderTime();
+      if (remaining === 0) {
+        clearInterval(timerId);
+        msgEl.textContent = '!!! WAKTU HABIS !!!';
+        btn.disabled = true; input.disabled = true;
+        card.classList.add('shake');
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerId);
+      renderTime();
+      timerId = setInterval(tick, 1000);
+      alarm.play().catch(()=>{}); // mulai alarm
+    }
+
+    function unlock() {
+      clearInterval(timerId);
+      msgEl.textContent = 'Kode benar. Sistem dipulihkan...';
+      alarm.pause();
+      alarm.currentTime = 0;
+      setTimeout(() => overlay.style.display = 'none', 1000);
+    }
+
+    btn.addEventListener('click', () => {
+      if (input.value === PASSWORD) { unlock(); }
+      else { msgEl.textContent = 'Kode salah!'; card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'),600); }
+    });
+
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+    startTimer();
+  </script>
+</body>
+</html>

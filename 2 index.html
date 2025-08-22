@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+    }
+    .container {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 350px;
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 22px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    #qrcode {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 15px;
+      display: inline-block;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    #downloadBtn {
+      margin-top: 15px;
+      display: none;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #4cafef;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #downloadBtn:hover {
+      background: #1c9bef;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.8);}
+      to {opacity: 1; transform: scale(1);}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>✨ URL ke QR Code ✨</h2>
+    <input type="text" id="urlInput" placeholder="Masukkan URL..." value="https://openai.com/">
+    <div id="qrcode"></div>
+    <button id="downloadBtn" onclick="downloadQR()">Download QR</button>
+  </div>
+
+  <!-- Library qrcode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    let qr;
+
+    function generateQR(url) {
+      const qrContainer = document.getElementById("qrcode");
+      qrContainer.innerHTML = ""; // reset
+
+      if (!url) {
+        document.getElementById("downloadBtn").style.display = "none";
+        return;
+      }
+
+      qr = new QRCode(qrContainer, {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: "#000",
+        colorLight: "#fff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      document.getElementById("downloadBtn").style.display = "inline-block";
+    }
+
+    function downloadQR() {
+      const img = document.querySelector("#qrcode img");
+      if (img) {
+        const a = document.createElement("a");
+        a.href = img.src;
+        a.download = "qrcode.png";
+        a.click();
+      } else {
+        const canvas = document.querySelector("#qrcode canvas");
+        if (canvas) {
+          const a = document.createElement("a");
+          a.href = canvas.toDataURL("image/png");
+          a.download = "qrcode.png";
+          a.click();
+        }
+      }
+    }
+
+    // Auto generate saat mengetik
+    const input = document.getElementById("urlInput");
+    input.addEventListener("input", () => {
+      generateQR(input.value.trim());
+    });
+
+    // Generate default di awal
+    generateQR(input.value.trim());
+  </script>
+</body>
+</html>
